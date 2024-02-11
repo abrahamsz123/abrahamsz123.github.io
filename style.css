@@ -1,0 +1,51 @@
+document.addEventListener('DOMContentLoaded', function () {
+    // Variables globales
+    let players = [];
+    let currentPlayerIndex = 0;
+    let turns = 0;
+  
+    // Elementos del DOM
+    const mainMenu = document.getElementById('main-menu');
+    const bingoGame = document.getElementById('bingo-game');
+    const bingoBoard = document.getElementById('bingo-board');
+    const startGameBtn = document.getElementById('start-game-btn');
+    const drawNumberBtn = document.getElementById('draw-number-btn');
+    const scoresList = document.getElementById('scores');
+  
+    // Función para iniciar el juego
+    startGameBtn.addEventListener('click', function () {
+      const playerInputs = document.querySelectorAll('#player-input input');
+      players = Array.from(playerInputs).map(input => input.value);
+      // Inicializar el tablero de bingo
+      initializeBingoBoard();
+      mainMenu.classList.add('hidden');
+      bingoGame.classList.remove('hidden');
+    });
+  
+    // Función para inicializar el tablero de bingo
+    function initializeBingoBoard() {
+      // Lógica para crear y mostrar el tablero de bingo para el jugador actual
+      // Esto debe generar un tablero de NxN con números aleatorios
+    }
+  
+    // Función para sacar un número de bingo aleatorio
+    drawNumberBtn.addEventListener('click', function () {
+      // Lógica para sacar un número aleatorio que no se haya sacado antes
+      // Actualizar el tablero de bingo y verificar si hay una línea o cartón lleno
+      // Incrementar el contador de turnos
+      turns++;
+      // Verificar si se ha llegado al máximo de turnos o si alguien ha ganado
+      if (turns >= 25 || /* algún jugador ha ganado */) {
+        endGame();
+      }
+    });
+  
+    // Función para finalizar el juego
+    function endGame() {
+      // Calcular puntajes y mostrarlos en la interfaz
+      // Actualizar las victorias acumuladas en el almacenamiento local
+      // Mostrar el menú principal nuevamente
+      mainMenu.classList.remove('hidden');
+      bingoGame.classList.add('hidden');
+    }
+  });

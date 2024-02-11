@@ -1,0 +1,345 @@
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bingo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        header, footer {
+            background-color: #333;
+            color: white;
+            text-align: center;
+            padding: 10px 0;
+        }
+
+        main {
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 20px;
+        }
+
+        /* Estilos para el menú principal */
+        #main-menu {
+            text-align: center;
+        }
+
+        #player-names-form {
+            margin-bottom: 20px;
+        }
+
+        #player-names-form label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        #player-names-form input[type="text"],
+        #player-names-form select {
+            padding: 5px;
+            margin-bottom: 10px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        #player-names-form button {
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #player-names-form button:hover {
+            background-color: #555;
+        }
+
+        /* Estilos para el juego de Bingo */
+        #bingo-game {
+            text-align: center;
+        }
+
+        #bingo-board {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr); /* Ajustar según el tamaño del cartón */
+            gap: 5px;
+            margin-bottom: 20px;
+        }
+
+        #bingo-board div {
+            border: 1px solid #333;
+            padding: 10px;
+            text-align: center;
+            background-color: #f0f0f0;
+        }
+
+        #draw-number-btn {
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #draw-number-btn:hover {
+            background-color: #555;
+        }
+
+        #game-status {
+            margin-top: 20px;
+        }
+
+        #return-to-menu-btn {
+            padding: 10px 20px;
+            background-color: #333;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        #return-to-menu-btn:hover {
+            background-color: #555;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Bingo</h1>
+    </header>
+    <main>
+        <section id="main-menu">
+            <h2>Menú Principal</h2>
+            <div id="scoreboard">
+                <h3>Tabla de Puntuaciones</h3>
+                <table>
+                    <!-- Aquí se mostrará la tabla de puntuaciones -->
+                </table>
+            </div>
+            <form id="player-names-form">
+                <label for="player1">Nombre del Jugador 1:</label>
+                <input type="text" id="player1" required><br>
+                <!-- Repetir para los otros jugadores -->
+                
+                <label for="board-size">Tamaño del Cartón:</label>
+                <select id="board-size" required>
+                    <option value="3">3x3</option>
+                    <option value="4">4x4</option>
+                    <option value="5">5x5</option>
+                </select><br>
+                <button id="start-game-btn" type="button">Comenzar Juego</button>
+            </form>
+        </section>
+        <section id="bingo-game" style="display: none;">
+            <h2>Juego de Bingo</h2>
+            <div id="current-player">
+                <!-- Aquí se mostrará el nombre del jugador actual -->
+            </div>
+            <div id="bingo-board">
+                <!-- Aquí se mostrará el cartón de bingo -->
+            </div>
+            <button id="draw-number-btn">Sacar Número</button>
+            <div id="drawn-number">
+                <!-- Aquí se mostrará el número sacado -->
+            </div>
+            <div id="game-status">
+                <!-- Aquí se mostrará el estado del juego (líneas, cartón lleno) -->
+            </div>
+            <button id="return-to-menu-btn">Volver al Menú Principal</button>
+        </section>
+    </main>
+    <footer>
+        <p>Desarrollado por [Abraham]</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Variables globales
+            let currentPlayerIndex = 0; // Índice del jugador actual
+            let players = []; // Array para almacenar los nombres de los jugadores
+            let bingoNumbers = []; // Array para almacenar los números ya sacados
+            let turnsCount = 0; // Contador de turnos
+
+            // Función para iniciar el juego
+            function startGame() {
+                // Ocultar el menú principal y mostrar la sección del juego
+                document.getElementById("main-menu").style.display = "none";
+                document.getElementById("bingo-game").style.display = "block";
+
+                // Obtener los nombres de los jugadores y el tamaño del cartón
+                for (let i = 1; i <= 4; i++) {
+                    let playerName = document.getElementById("player" + i).value;
+                    players.push({ name: playerName, board: [] }); // Crear un objeto jugador con nombre y tablero vacío
+                }
+                let boardSize = parseInt(document.getElementById("board-size").value);
+
+                // Generar los cartones de bingo para cada jugador
+                generateBingoBoards(boardSize);
+
+                // Mostrar el primer cartón de bingo y el nombre del primer jugador
+                showBingoBoard(currentPlayerIndex);
+            }
+
+// Función para generar los cartones de bingo para cada jugador
+function generateBingoBoards(size) {
+    for (let i = 0; i < 4; i++) {
+        let board = [];
+        while (board.length < size * size) {
+            let randomNum = Math.floor(Math.random() * 50) + 1;
+            if (!board.includes(randomNum)) {
+                board.push(randomNum);
+            }
+        }
+        // Ordenar el cartón de forma aleatoria
+        board.sort(() => Math.random() - 0.5);
+        players[i].board = board;
+    }
+}
+
+// Función para mostrar el cartón de bingo de un jugador específico
+function showBingoBoard(playerIndex) {
+    let currentPlayer = players[playerIndex];
+    let board = currentPlayer.board;
+    let boardHtml = "";
+    for (let i = 0; i < board.length; i++) {
+        boardHtml += `<div>${board[i]}</div>`;
+    }
+    document.getElementById("bingo-board").innerHTML = boardHtml;
+    document.getElementById("current-player").innerHTML = `Jugador Actual: ${currentPlayer.name}`;
+}
+
+    // Función para sacar un número de bingo aleatorio
+    function drawBingoNumber() {
+        let drawnNumber;
+        do {
+            drawnNumber = Math.floor(Math.random() * 50) + 1;
+        } while (bingoNumbers.includes(drawnNumber));
+
+        bingoNumbers.push(drawnNumber);
+        document.getElementById("drawn-number").innerHTML = `Número Sacado: ${drawnNumber}`;
+
+        // Verificar si el número está en los cartones de los jugadores
+        for (let i = 0; i < 4; i++) {
+            let currentPlayer = players[i];
+            let board = currentPlayer.board;
+            let index = board.indexOf(drawnNumber);
+            if (index !== -1) {
+                // Marcar el número en el cartón del jugador
+                board[index] = "X";
+                showBingoBoard(i);
+                checkGameStatus(currentPlayer, index);
+            }
+        }
+
+        turnsCount++;
+        if (turnsCount >= 25) {
+            endGame();
+        }
+    }
+
+    // Función para verificar el estado del juego (líneas, cartón lleno)
+    function checkGameStatus(player, index) {
+    let board = player.board;
+    let size = Math.sqrt(board.length);
+
+    // Verificar líneas horizontales
+    let rowIndex = Math.floor(index / size);
+    let row = board.slice(rowIndex * size, (rowIndex + 1) * size);
+    if (row.every(num => num === "X")) {
+        // Línea horizontal completa
+        // Incrementar el puntaje del jugador y mostrar el estado del juego
+        player.score += 1;
+        document.getElementById("game-status").innerHTML = `${player.name} ha completado una línea horizontal.`;
+    }
+
+    // Verificar líneas verticales
+    let colIndex = index % size;
+    let col = [];
+    for (let i = 0; i < size; i++) {
+        col.push(board[colIndex + i * size]);
+    }
+    if (col.every(num => num === "X")) {
+        // Línea vertical completa
+        // Incrementar el puntaje del jugador y mostrar el estado del juego
+        player.score += 1;
+        document.getElementById("game-status").innerHTML = `${player.name} ha completado una línea vertical.`;
+    }
+
+    // Verificar líneas diagonales (solo para cartones cuadrados)
+    if (size === size) {
+        let diag1 = [];
+        let diag2 = [];
+        for (let i = 0; i < size; i++) {
+            diag1.push(board[i * (size + 1)]);
+            diag2.push(board[(i + 1) * (size - 1)]);
+        }
+        if (diag1.every(num => num === "X")) {
+            // Línea diagonal completa
+            // Incrementar el puntaje del jugador y mostrar el estado del juego
+            player.score += 1;
+            document.getElementById("game-status").innerHTML = `${player.name} ha completado una línea diagonal.`;
+        }
+        if (diag2.every(num => num === "X")) {
+            // Línea diagonal completa
+            // Incrementar el puntaje del jugador y mostrar el estado del juego
+            player.score += 1;
+            document.getElementById("game-status").innerHTML = `${player.name} ha completado una línea diagonal.`;
+        }
+    }
+
+    // Verificar cartón lleno
+    if (board.every(num => num === "X")) {
+        // Cartón lleno
+        // Incrementar el puntaje del jugador y mostrar el estado del juego
+        player.score += 1;
+        document.getElementById("game-status").innerHTML = `${player.name} ha completado el cartón lleno.`;
+        endGame();
+    }
+}
+
+    // Función para terminar el juego
+    function endGame() {
+        // Ocultar la sección del juego y mostrar el menú principal
+        document.getElementById("bingo-game").style.display = "none";
+        document.getElementById("main-menu").style.display = "block";
+
+        // Mostrar el puntaje total de cada jugador y actualizar la tabla de puntuaciones
+        for (let i = 0; i < 4; i++) {
+            let player = players[i];
+            document.getElementById("scoreboard").innerHTML += `<tr><td>${player}</td><td>${player.score}</td></tr>`;
+            // Guardar las victorias acumuladas en localStorage
+            let wins = localStorage.getItem(player) || 0;
+            localStorage.setItem(player, parseInt(wins) + player.score);
+        }
+        // Reiniciar variables globales para una nueva partida
+        currentPlayerIndex = 0; // Reiniciar el índice del jugador actual
+        players = []; // Reiniciar el array de jugadores
+        bingoNumbers = []; // Reiniciar el array de números de bingo
+        turnsCount = 0; // Reiniciar el contador de turnos
+
+        // Mostrar el menú principal
+        document.getElementById("main-menu").style.display = "block";
+    }
+
+    // Manejador de eventos para el botón de inicio del juego
+    document.getElementById("start-game-btn").addEventListener("click", function(event) {
+        event.preventDefault();
+        startGame();
+    });
+
+    // Manejador de eventos para el botón de sacar número de bingo
+    document.getElementById("draw-number-btn").addEventListener("click", function() {
+        drawBingoNumber();
+    });
+
+    // Manejador de eventos para el botón de volver al menú principal
+    document.getElementById("return-to-menu-btn").addEventListener("click", function() {
+        endGame();
+    });
+});
+    </script>
+</body>
+</html>
